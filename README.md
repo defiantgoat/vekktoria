@@ -1,2 +1,2 @@
-# vekktoria
+# Vekktoria
 A cartographic art tool
