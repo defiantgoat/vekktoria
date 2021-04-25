@@ -1,4 +1,4 @@
-import {randomRGBAGenerator} from './utils';
+import { randomRGBAGenerator } from './utils';
 
 // VekktoriaFill -> [r, g, b, alpha, visible]
 type VekktoriaFill = [number, number, number, number, number] | [];
@@ -79,8 +79,7 @@ export const mapboxAttributes: Set<string> = new Set([
   'stream',
   'drain',
   'ditch'
-])
-
+]);
 
 export const generateEmptyVekktoriaStyles = (): Map<string, VekktoriaStyle> => {
   const newStyleMap = new Map().set('default', emptyStyle);
@@ -106,4 +105,4 @@ export const generateRandomVekktoriaStyles = (): Map<string, VekktoriaStyle> => 
   });
 
   return newStyleMap;
-}
+};

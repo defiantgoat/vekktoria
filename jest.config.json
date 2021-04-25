@@ -4,10 +4,13 @@
       ".(ts|tsx)": "ts-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(ol)/)"
+      "node_modules/(?!(ol|ol\\-ext)/)"
     ],
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+    "moduleNameMapper": {
+      ".+\\.(css|scss)$": "identity-obj-proxy"
+    },
     "collectCoverage": true,
     "coverageDirectory": "./coverage",
     "collectCoverageFrom": [
