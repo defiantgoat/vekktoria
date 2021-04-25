@@ -5,6 +5,7 @@ import OLTileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import useStyles from './use-styles';
 import MapContainerContext from '../MapContainerContext';
+import {generateRandomVekktoriaStyles} from '../../vekktoria/vekktoria-styles';
 import 'ol/ol.css';
 
 const MapContainer: React.FC = () =>  {
