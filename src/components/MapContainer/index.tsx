@@ -5,12 +5,13 @@ import OLTileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import useStyles from './use-styles';
 import MapContainerContext from '../MapContainerContext';
+import 'ol/ol.css';
 
 const MapContainer: React.FC = () =>  {
   
   const {mapContainer} = useStyles();
 
-  const [olMap, setOlMap] = useState(null as any);
+  const [olMap, setOlMap] = useState(null as OLMap | null);
 
   useLayoutEffect(() => {
     const map = new OLMap({
