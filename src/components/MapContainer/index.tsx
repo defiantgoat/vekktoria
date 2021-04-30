@@ -5,10 +5,13 @@ import OLTileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import useStyles from './use-styles';
 import MapContainerContext from '../MapContainerContext';
-import {generateRandomVekktoriaStyles} from '../../vekktoria/vekktoria-styles';
 import 'ol/ol.css';
 
-const MapContainer: React.FC = () =>  {
+interface MapContainerProps {
+  children: React.ReactNode;
+}
+
+const MapContainer: React.FC<MapContainerProps> = ({children}: MapContainerProps) =>  {
   
   const {mapContainer} = useStyles();
 
@@ -20,11 +23,6 @@ const MapContainer: React.FC = () =>  {
         center: [0, 0],
         zoom: 1
       }),
-      layers: [
-        new OLTileLayer({
-          source: new OSM()
-        })
-      ],
       target: 'map'
     });
 
@@ -38,6 +36,7 @@ const MapContainer: React.FC = () =>  {
   return (
     <MapContainerContext.Provider value={olMap}>
       <div id='map' className={mapContainer}>
+        { olMap && children }
       </div>
     </MapContainerContext.Provider>
   );
