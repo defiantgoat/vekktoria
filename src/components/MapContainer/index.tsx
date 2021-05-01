@@ -8,7 +8,7 @@ import MapContainerContext from '../MapContainerContext';
 import 'ol/ol.css';
 
 interface MapContainerProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({children}: MapContainerProps) =>  {
