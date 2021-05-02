@@ -2,6 +2,7 @@ import React from 'react';
 import useStyles from './use-styles';
 import MapContainer from '../MapContainer';
 import MapboxLayer from '../MapboxLayer';
+import MVTReader from '../MVTReader';
  
 const App: React.FC = () =>  {
 
@@ -9,6 +10,7 @@ const App: React.FC = () =>  {
 
   return (
     <div className={app}>
+      <MVTReader />
       <MapContainer>
         <MapboxLayer />
       </MapContainer>

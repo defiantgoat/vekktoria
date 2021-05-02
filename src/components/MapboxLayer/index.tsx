@@ -15,6 +15,21 @@ const mapboxTileUrlFunction = ([z,x,y])=> {
   return url;
 };
 
+const mapboxTileLoadFunction = (tile, src)=> {
+  tile.setLoader(async (extent, resolution, projection) => {
+    console.log(projection, extent);
+    const data = await fetch(src);
+    const array = await data.arrayBuffer();
+    const format = tile.getFormat();
+    const features = format.readFeatures(array, {
+      extent,
+      featureProjection: projection
+    });
+
+    tile.setFeatures(features)
+  });
+};
+
 const MapboxLayer: React.FC = () =>  {
   const map = useContext(MapContainerContext);
   const layer = useRef(null as OLVectorTileLayer | null);
@@ -35,7 +50,8 @@ const MapboxLayer: React.FC = () =>  {
         format,
         tileSize,
         tileGrid,
-        tileUrlFunction: mapboxTileUrlFunction
+        tileUrlFunction: mapboxTileUrlFunction,
+        tileLoadFunction: mapboxTileLoadFunction
       });
 
       layer.current = new OLVectorTileLayer({
