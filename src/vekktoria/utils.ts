@@ -248,18 +248,24 @@ function createFeature_(pbf, rawFeature, options) {
   return feature;
 }
 
-function readIndividualLayer(tag, layer, pbf) {
+// Mutates the layer object passed
+const readIndividualLayer = (tag: number, layer: Map<string,any>, pbf: any): void => {
   if (tag === 15) {
-    layer.version = pbf.readVarint();
-  } else if (tag === 1) {
-    layer.name = pbf.readString();
-  } else if (tag === 5) {
-    layer.extent = pbf.readVarint();
-  } else if (tag === 2) {
-    layer.features.push(pbf.pos);
-  } else if (tag === 3) {
-    layer.keys.push(pbf.readString());
-  } else if (tag === 4) {
+    layer.set('version', pbf.readVarint());
+  } 
+  else if (tag === 1) {
+    layer.set('name', pbf.readString());
+  } 
+  else if (tag === 5) {
+    layer.set('extent', pbf.readVarint());
+  } 
+  else if (tag === 2) {
+    layer.get('features').push(pbf.pos);
+  } 
+  else if (tag === 3) {
+    layer.get('keys').push(pbf.readString());
+  } 
+  else if (tag === 4) {
     let value = null;
     const end = pbf.readVarint() + pbf.pos;
     while (pbf.pos < end) {
@@ -281,31 +287,27 @@ function readIndividualLayer(tag, layer, pbf) {
           ? pbf.readBoolean()
           : null;
     }
-    layer.values.push(value);
+    layer.get('values').push(value);
   }
-}
+};
 
-function readLayers(tag, layers, pbf) {
-  //console.log(tag, layers, pbf);
+const readLayers = (tag: number, layers: Map<string,any>, pbf: any): void => {
+  const individualLayer = new Map();
+  individualLayer.set('keys', []);
+  individualLayer.set('values', []);
+  individualLayer.set('features', []);
+
   if (tag === 3) {
-    const layer = {
-      keys: [],
-      values: [],
-      features: [],
-    };
     const end = pbf.readVarint() + pbf.pos;
-    console.log(end)
-    pbf.readFields(readIndividualLayer, layer, end);
-    console.log(layer)
-    // @ts-ignore
-    layer.length = layer.features.length;
-    // @ts-ignore
-    if (layer.length) {
-      // @ts-ignore
-      layers[layer.name] = layer;
+        
+    pbf.readFields(readIndividualLayer, individualLayer, end);
+
+    if (individualLayer.get('features').length > 0) {
+      individualLayer.set('length', individualLayer.get('features').length);
+      layers.set(individualLayer.get('name'), individualLayer);
     }
   }
-}
+};
 
 function featurePBFReader(tag, feature, pbf) {
   if (tag == 1) {
@@ -313,8 +315,8 @@ function featurePBFReader(tag, feature, pbf) {
   } else if (tag == 2) {
     const end = pbf.readVarint() + pbf.pos;
     while (pbf.pos < end) {
-      const key = feature.layer.keys[pbf.readVarint()];
-      const value = feature.layer.values[pbf.readVarint()];
+      const key = feature.layer.get('keys')[pbf.readVarint()];
+      const value = feature.layer.get('values')[pbf.readVarint()];
       feature.properties[key] = value;
     }
   } else if (tag == 3) {
@@ -325,10 +327,8 @@ function featurePBFReader(tag, feature, pbf) {
 }
 
 function readRawFeature(pbf, layer, i) {
-  pbf.pos = layer.features[i];
-  console.log('pbf.pos', pbf.pos)
+  pbf.pos = layer.get('features')[i];
   const end = pbf.readVarint() + pbf.pos;
-  console.log('end', end)
 
   const feature = {
     layer: layer,
@@ -344,7 +344,7 @@ function readRawFeature(pbf, layer, i) {
 
 
 export const mvtReader = async (): Promise<void> => {
-  const layers = new Map();
+  const layersMap = new Map();
 
   const dataProjection: Record<string,any> = {
     code: '',
@@ -358,24 +358,24 @@ export const mvtReader = async (): Promise<void> => {
   const array = await data.arrayBuffer();
 
   const pbf = new PBF(array);
-  const pbfLayers = pbf.readFields(readLayers, {});
-  // const pbfLayers = pbf.readFields(function (tag, layers) {
-  //   console.log(tag, pbf.pos)
-  //   if (tag == 3) {
-  //     const layer = {
-  //       keys: [],
-  //       values: [],
-  //       features: [],
-  //     };
+  const pbfLayers: Map<string,any> = pbf.readFields(readLayers, layersMap);
 
-  //     const end = pbf.readVarint() + pbf.pos;
-  //     pbf.readFields(function (tag, layer, end) {
-  //       console.log(tag, layer)
-  //     });
-  //     //pbf.readFields(readIndividualLayer, layer, end);
-  //   }
+
+
+  pbfLayers.forEach((layer, layerName) => {
+    const rawFeatures: Array<any> = [];
+    const extent = layer.has('extent') ? [0, 0, layer.get('extent'), layer.get('extent')] : null;
+  
+
+    const layerLength = layer.get('length');
     
-  // }, {cat: 'dog'});
+    for (let i = 0; i < layerLength; i++) {
+      const rawFeature = readRawFeature(pbf, layer, i);
+      rawFeatures.push(rawFeature);
+    }
+
+    layer.set('rawFeatures', rawFeatures);
+  });
 
   console.log(pbfLayers)
 
