@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import OLVectorTileLayer from 'ol/layer/VectorTile';
 import OLVectorTile from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT.js';
@@ -15,26 +15,36 @@ const mapboxTileUrlFunction = ([z,x,y])=> {
   return url;
 };
 
-const mapboxTileLoadFunction = (tile, src)=> {
-  tile.setLoader(async (extent, resolution, projection) => {
-    console.log(projection, extent);
-    const data = await fetch(src);
-    const array = await data.arrayBuffer();
-    const format = tile.getFormat();
-    const features = format.readFeatures(array, {
-      extent,
-      featureProjection: projection
-    });
-
-    tile.setFeatures(features)
-  });
-};
-
 const MapboxLayer: React.FC = () =>  {
   const map = useContext(MapContainerContext);
   const layer = useRef(null as OLVectorTileLayer | null);
   const source = useRef(null as OLVectorTile | null);
   const format = new MVT();
+
+  const toSVG = () => {
+    const extent = map?.getView().getProjection().getExtent();
+    if (extent) {
+      const features = source.current?.getFeaturesInExtent(map.getView().getProjection().getExtent());
+      // take extent and convert to screen coordinates
+      // take each feature and convert its flat coords to screen coords
+      // iterate through and create an svg, using styles as set in state.
+      console.log(features)
+    }
+  };
+
+  const mapboxTileLoadFunction = (tile, src)=> {
+    tile.setLoader(async (extent, resolution, projection) => {
+      const data = await fetch(src);
+      const array = await data.arrayBuffer();
+      const format = tile.getFormat();
+      const features = format.readFeatures(array, {
+        extent,
+        featureProjection: projection
+      });
+  
+      tile.setFeatures(features)
+    });
+  };
 
   useEffect(() => {
     if (map) {
@@ -57,7 +67,7 @@ const MapboxLayer: React.FC = () =>  {
       layer.current = new OLVectorTileLayer({
         source: source.current
       });
-  
+
       map.addLayer(layer.current);
     }
     
@@ -69,7 +79,14 @@ const MapboxLayer: React.FC = () =>  {
     }
   }, [map, layer, source]);
 
-  return null;
+  return (
+    <button
+      style={{position: 'absolute', top: 0, right: 0}}
+      onClick={toSVG}
+    >
+      tosvg
+    </button>
+  );
 };
 
 export default MapboxLayer;
